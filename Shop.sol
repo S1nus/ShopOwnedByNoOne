@@ -6,6 +6,7 @@ contract Shop {
     mapping (address => bool) public employees;
     uint min_balance = 71;
     uint lemonade_price = 50;
+    uint balance;
     
     constructor() public {
         property_manager = msg.sender;
@@ -16,20 +17,8 @@ contract Shop {
         _;
     }
     
-    function makeSale() public {
-        
+    function buyLemonade() payable {
+        balance += msg.balance;
     }
     
-    function payEmployees() internal {
-        
-    }
-        
-    
-    function startWorking() public {
-        
-    }
-    
-    function stopWorking() public {
-        
-    }
 }
