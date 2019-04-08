@@ -7,6 +7,7 @@ contract Shop {
     uint min_balance = 71;
     uint lemonade_price = 50;
     uint balance;
+    bool shop_up = false;
 
     constructor() public {
         property_manager = msg.sender;
@@ -14,6 +15,11 @@ contract Shop {
 
     modifier onlyEmployee() {
         require(employees[msg.sender] == true);
+        _;
+    }
+    
+    modifier onlyPropertyManager() {
+        require(property_manager == msg.sender);
         _;
     }
 
