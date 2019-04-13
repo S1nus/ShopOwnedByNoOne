@@ -2,37 +2,29 @@ pragma solidity >=0.4.22 <0.6.0;
 
 contract Shop {
 
-    address property_manager;
-    //mapping (address => bool) public employees;
-    address[] public employees = new address[](2);
-    uint min_balance = 71;
-    uint lemonade_price = 50;
-    uint balance;
-    bool shop_up = false;
+    address payable employee0;
+    address payable employee1;
+    
+    uint shop_balance;
 
     constructor() public {
-        property_manager = msg.sender;
-        employees.push(msg.sender);
+        employee0 = msg.sender;
     }
 
-    /*modifier onlyEmployee() {
-        r//equire(employees[msg.sender] == true);
-        _;
-    }*/
+    function purchase() public payable {
+        shop_balance += msg.value;
+    }
     
-    modifier onlyPropertyManager() {
-        require(property_manager == msg.sender);
-        _;
+    function get_balance() public view returns (uint) {
+        return shop_balance;
     }
-
-    function buyLemonade() public payable {
-        balance += msg.value;
-    }
-
-    function pay_employees() internal {
-        if (balance < min_balance) {
-        
+    
+    function get_num_employees(uint employee_number) public view returns (address) {
+        if (employee_number == 0) {
+            return employee0;
+        }
+        else if (employee_number == 1) {
+            return employee1;
         }
     }
-
 }
