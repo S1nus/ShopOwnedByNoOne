@@ -8,7 +8,7 @@ contract Shop {
     uint shop_balance;
     uint shop_min_balance;
 
-    constructor() public {
+    constructor() payable public {
         employee0 = msg.sender;
         shop_min_balance = 30000000000000000;
     }
