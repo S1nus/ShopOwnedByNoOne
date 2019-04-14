@@ -29,9 +29,18 @@ contract Shop {
     
     function pay_employees() internal {
         if (shop_balance > shop_min_balance) {
-            uint to_pay = shop_balance - shop_min_balance;
-            shop_balance -= to_pay;
-            employee0.transfer(to_pay);
+            if (employee0 != address(0) && employee1 == address(0)) {
+                //pay employee0 the full payment
+                uint to_pay = shop_balance - shop_min_balance;
+                shop_balance -= to_pay;
+                employee0.transfer(to_pay);
+            }
+            if (employee0 != address(0) && employee1 != address(0)) {
+                // split it up and pay both
+            }
+            if (employee0 == address(0) && employee1 != address(0)) {
+                //pay employee1 the full payment
+            }
         }
     }
     
