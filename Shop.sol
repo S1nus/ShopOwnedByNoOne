@@ -20,7 +20,7 @@ contract Shop {
 
     function purchase() public payable {
         shop_balance += msg.value;
-        ///pay_employees();
+        pay_employees();
     }
     
     function get_balance() public view returns (uint) {
@@ -29,22 +29,10 @@ contract Shop {
     
     function pay_employees() internal {
         if (shop_balance > shop_min_balance) {
-            /*if (!get_null_employees()) {
-                uint to_send = (shop_balance-shop_min_balance)/2;
-                employee0.transfer(to_send);
-                employee1.transfer(to_send);
-            }
-            else {
-                if (employee0 == address(0)) {
-                    employee1.transfer(shop_balance-shop_min_balance);
-                }
-                else if (employee1 == address(0)) {
-                    employee1.transfer(shop_balance-shop_min_balance);
-                }
-            }*/
-            employee0.transfer(shop_balance - shop_min_balance);
+            uint to_pay = shop_balance - shop_min_balance;
+            shop_balance -= to_pay;
+            employee0.transfer(to_pay);
         }
-        
     }
     
     function get_num_employees(uint employee_number) public view returns (address) {
@@ -65,3 +53,4 @@ contract Shop {
         }
     }
 }
+
