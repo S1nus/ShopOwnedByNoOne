@@ -51,6 +51,29 @@ contract Shop {
         }
     }
     
+    function become_employee() public returns (bool) {
+        if (employee0 == address(0)) {
+            employee0 = msg.sender;
+            return true;
+        }
+        else if (employee1 == address(0)) {
+            employee1 = msg.sender;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    function quit() public only_employee {
+        if (employee0 == msg.sender) {
+            employee0 = address(0);
+        }
+        else if (employee1 == msg.sender) {
+            employee1 = address(0);
+        }
+    }
+    
     function get_num_employees(uint employee_number) public view returns (address) {
         if (employee_number == 0) {
             return employee0;
