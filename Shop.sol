@@ -37,9 +37,16 @@ contract Shop {
             }
             if (employee0 != address(0) && employee1 != address(0)) {
                 // split it up and pay both
+                uint to_pay = (shop_balance - shop_min_balance) / 2;
+                shop_balance -= (shop_balance -shop_min_balance);
+                employee0.transfer(to_pay);
+                employee1.transfer(to_pay);
             }
             if (employee0 == address(0) && employee1 != address(0)) {
                 //pay employee1 the full payment
+                uint to_pay = shop_balance - shop_min_balance;
+                shop_balance -= to_pay;
+                employee1.transfer(to_pay);
             }
         }
     }
