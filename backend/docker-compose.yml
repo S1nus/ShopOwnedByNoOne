@@ -1,0 +1,21 @@
+version: '3.2'
+services:
+        pyboy:
+                build: .
+                ports:
+                        - "8000:5000" 
+                volumes:
+                        - type: bind
+                          source: ./app
+                          target: /app
+                stdin_open: true
+                tty: true
+        parity:
+                image: parity/parity:stable
+                command: --light -j --jsonrpc-interface '0.0.0.0' --chain kovan
+                ports:
+                         - "8545:8545"
+                volumes:
+                        - ./parity:/root/.local
+                stdin_open: true
+                tty: true
