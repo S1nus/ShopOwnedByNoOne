@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="static/main.css" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="static/jsQR.js"></script>
+		<script type="text/javascript">
+			var reader = new FileReader();
+			var image = new Image();
+			var data;
+			document.addEventListener("DOMContentLoaded", function() {
+
+				var file_selector = document.getElementById("file-upload");
+				reader.addEventListener("loadend", function() {
+					image.src = reader.result;
+					var canvas = document.createElement("canvas");
+					canvas.width = image.width;
+					canvas.height = image.height;
+					var ctx = canvas.getContext("2d");
+					ctx.drawImage(image, 0, 0);
+					data = ctx.getImageData(0, 0, image.width, image.height);
+					code = jsQR(data.data, image.width, image.height);
+					document.getElementById("text-field").value = code.data;
+				});
+
+				file_selector.addEventListener("change", function() {
+					reader.readAsDataURL(this.files[0]);
+				});
+
+				contentbox = document.getElementById("interactive");
+				document.getElementById("connect-wallet-btn").addEventListener("click", function() {
+					contentbox.innerHTML = "";	
+					var loading = document.createElement("img");
+					loading.width = 50;
+					loading.src = "static/gear.gif";
+					contentbox.appendChild(loading);
+					var req = new XMLHttpRequest();
+					req.open("POST", "/auth", true);
+					req.onreadystatechange = function() {
+						try {
+							contentbox.innerHTML = this.responseText;
+						}
+						catch (e) {
+							contentbox.innerHTML = "still doing shit";
+						}
+					};
+					req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+					req.send("privkey=panda");
+					//req.send("privkey=panda");
+				});
+
+			});
+		</script>
+	</head>
+	<body>
+		<div id="header">
+			<span>A Lemonade Stand Owned by No One</span>
+			<img src="static/banner.png" />
+		</div>
+		<div id="interactive">
+			No Ethereum wallet detected.
+			<br>
+			<input type="text" id="text-field" placeholder="private key" class="qrcode-text">
+			<label class="qrcode-text-btn">
+				<input type=file id="file-upload" accept="image/*" capture=environment tabindex=-1>
+			</label>
+			<br>
+			<button id="connect-wallet-btn">Connect Wallet</button>
+		</div>
+	</body>
+</html>

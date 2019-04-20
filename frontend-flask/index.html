@@ -11,7 +11,7 @@
 					node.value = "";
 					qrcode.callback = function(res) {
 						if (res instanceof Error) {
-							alert("error: " + res.message);
+							alert("No QR code found. Try again?");
 						}
 						else {
 							node.parentNode.previousElementSibling.value = res;
