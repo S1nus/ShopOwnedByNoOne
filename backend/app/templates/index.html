@@ -9,6 +9,7 @@
 			var image = new Image();
 			var data;
 			document.addEventListener("DOMContentLoaded", function() {
+				textbox = document.getElementById("text-field");
 
 				var file_selector = document.getElementById("file-upload");
 				reader.addEventListener("loadend", function() {
@@ -45,8 +46,7 @@
 						}
 					};
 					req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-					req.send("privkey=panda");
-					//req.send("privkey=panda");
+					req.send("privkey=" + textbox.value);
 				});
 
 			});

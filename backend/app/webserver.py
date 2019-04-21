@@ -1,13 +1,23 @@
 from flask import Flask, request
 from flask import render_template
+import time
+from web3 import Web3
 
 app = Flask(__name__)
 
+provider = Web3.HTTPProvider("http://parity:8545", request_kwargs={'timeout':60})
+myweb3 = Web3(provider)
+
 @app.route("/auth", methods=['POST'])
 def get_privkey():
-	print(request.form)
-	print(request.form.get("privkey"))
-	return "REPLY"
+	print("Private Key: " + request.form.get("privkey"))
+	privkey = request.form.get("privkey")
+	account = myweb3.eth.account.privateKeyToAccount(privkey)
+	print("address: " + account.address)
+	balance = myweb3.eth.getBalance(account.address)
+	time.sleep(2)
+	return str(balance)
+
 @app.route("/")
 def hello():
 	message = "Hello, world!"
