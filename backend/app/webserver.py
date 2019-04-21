@@ -15,8 +15,8 @@ def get_privkey():
 	account = myweb3.eth.account.privateKeyToAccount(privkey)
 	print("address: " + account.address)
 	balance = myweb3.eth.getBalance(account.address)
-	time.sleep(2)
-	return str(balance)
+
+	return render_template("control_panel.html", balance=balance)
 
 @app.route("/")
 def hello():
