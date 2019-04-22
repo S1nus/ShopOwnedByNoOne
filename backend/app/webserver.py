@@ -15,6 +15,7 @@ def get_privkey():
 	account = myweb3.eth.account.privateKeyToAccount(privkey)
 	print("address: " + account.address)
 	balance = myweb3.eth.getBalance(account.address)
+	balance = myweb3.fromWei(balance, 'ether')
 
 	return render_template("control_panel.html", balance=balance)
 

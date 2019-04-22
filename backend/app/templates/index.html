@@ -8,6 +8,9 @@
 			var reader = new FileReader();
 			var image = new Image();
 			var data;
+
+			var buyBtn, joinBtn, balanceSpan;
+
 			document.addEventListener("DOMContentLoaded", function() {
 				textbox = document.getElementById("text-field");
 
@@ -40,6 +43,7 @@
 					req.onreadystatechange = function() {
 						try {
 							contentbox.innerHTML = this.responseText;
+							updateControlPanel();
 						}
 						catch (e) {
 							contentbox.innerHTML = "still doing shit";
@@ -50,6 +54,32 @@
 				});
 
 			});
+
+			function updateControlPanel() {
+				try {
+					buyBtn = document.getElementById("buy-btn");	
+					joinBtn = document.getElementById("join-btn");
+					balanceSpan = document.getElementById("balance");	
+					buyBtn.addEventListener("click", function() {
+						var bal = parseFloat(balanceSpan.innerHTML);
+						if (bal >= 0.015) {
+							bal -= 0.015;
+							balanceSpan.innerHTML = bal;
+						}
+					});
+					joinBtn.addEventListener("click", function() {
+						if (joinBtn.innerHTML == "Become Employee") {
+							joinBtn.innerHTML = "Quit";
+						}
+						else {
+							joinBtn.innerHTML = "Become Employee";
+						}
+					});
+				}
+				catch (e) {
+					console.log("failed: " + e);
+				}
+			}
 		</script>
 	</head>
 	<body>
