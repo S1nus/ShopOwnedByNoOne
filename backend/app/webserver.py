@@ -40,6 +40,23 @@ def get_privkey():
 	except Exception as e:
 		return render_template("control_panel.html", balance=str(e))
 
+@app.route("/auth2", methods=['POST'])
+def get_privkey():
+	token = request.form.get("token")
+	try:
+                conn = sqlite3.connect("tokens.db")
+                query = conn.execute("select * from tokens where token=?", token=[token])
+                query = conn.fetchall()
+                if (len(query) != 1):
+                    print("error: query = " + str(len(query)))
+                else:
+                    privkey = query[0][1]
+                    account = myweb3.eth.account.privateKeyToAccount(privkey)
+                    balance = myweb3.eth.getBalance(account.address)
+		return render_template("control_panel.html", balance=balance, token=token)
+	except Exception as e:
+		return render_template("control_panel.html", balance=str(e))
+
 @app.route("/")
 def homepage():
 	return render_template("index.html")
