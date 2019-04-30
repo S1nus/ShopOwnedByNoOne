@@ -8,10 +8,6 @@
 			var reader = new FileReader();
 			var image = new Image();
 			var data;
-
-			var buyBtn, joinBtn, balanceSpan, tokenelement, gohomebtn;
-			var token;
-
 			document.addEventListener("DOMContentLoaded", function() {
 				textbox = document.getElementById("text-field");
 
@@ -44,7 +40,6 @@
 					req.onreadystatechange = function() {
 						try {
 							contentbox.innerHTML = this.responseText;
-							updateControlPanel();
 						}
 						catch (e) {
 							contentbox.innerHTML = "still doing shit";
@@ -52,67 +47,9 @@
 					};
 					req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 					req.send("privkey=" + textbox.value);
-					});
+				});
 
 			});
-
-			function updateControlPanel() {
-				try {
-					buyBtn = document.getElementById("buy-btn");	
-					joinBtn = document.getElementById("join-btn");
-					balanceSpan = document.getElementById("balance");	
-					tokenelement = document.getElementById("token");
-					gohomebtn = document.getElementById("go-home");
-					token = tokenelement.value;
-					console.log("token: " + token);
-					buyBtn.addEventListener("click", function() {
-						pay();
-						/*var bal = parseFloat(balanceSpan.innerHTML);
-						if (bal >= 0.015) {
-							bal -= 0.015;
-							balanceSpan.innerHTML = bal;
-						}*/
-					});
-					joinBtn.addEventListener("click", function() {
-						if (joinBtn.innerHTML == "Become Employee") {
-							joinBtn.innerHTML = "Quit";
-						}
-						else {
-							joinBtn.innerHTML = "Become Employee";
-						}
-					});
-					gohomebtn.addEventListener("click", function() {
-						window.location		
-					});
-				}
-				catch (e) {
-					console.log("failed: " + e);
-				}
-			}
-
-			function pay() {
-
-				var loading = document.createElement("img");
-				loading.width = 50;
-				loading.src = "static/gear.gif";
-				
-				contentbox.innerHTML = "";
-				contentbox.appendChild(loading);
-
-				var req = new XMLHttpRequest();
-				req.open("POST", "/pay", true);
-				req.onreadystatechange = function() {
-					try {
-						contentbox.innerHTML = this.responseText;
-						updateControlPanel();
-					}
-					catch (e) {
-						contentbox.innerHTML = "still doing shit";
-					}
-				};
-				req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-				req.send("token=" + token);
-			}
 		</script>
 	</head>
 	<body>
