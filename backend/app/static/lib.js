@@ -5,14 +5,13 @@ function ajax(url, data) {
 	loading.src = "static/gear.gif";
 	contentbox.appendChild(loading);
 	var req = new XMLHttpRequest();
-	req.open("POST", url, true);
+	req.open("post", url, true);
 	req.onreadystatechange = function() {
 		try {
 			contentbox.innerHTML = this.responseText;
-			updateControlPanel();
 		}
 		catch (e) {
-			contentbox.innerHTML = "still doing shit";
+			contentbox.innerHTML = "error:" + e.toString();
 		}
 	};
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

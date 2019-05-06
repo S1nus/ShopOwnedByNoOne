@@ -20,6 +20,9 @@ body {
 	display: block;
 	width: 50%;
 }
+#error {
+	color: red;
+}
 
 #interactive {
 	opacity: 0;
@@ -36,7 +39,7 @@ body {
 	margin-top: 10px;
 }
 
-.qrcode-text-btn {
+/*.qrcode-text-btn {
 	display: inline-block;
 	height: 1em;
 	width: 1em;
@@ -60,7 +63,7 @@ body {
 	width: 2em;
 	margin-left: -3em;
 	vertical-align: middle;
-}
+}*/
 
 @media (min-width: 1025px) {
 	/* Desktops */
