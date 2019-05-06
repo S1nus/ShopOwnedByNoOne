@@ -98,9 +98,12 @@ def toggleEmployee():
         if (dbEmpStatus == 1):
             query = conn.execute("update tokens set employee = ? where token = ?", [0, token])
             dbEmpStatus = 0
+            nonce = myweb3.eth.getTransactionCount(address)
+            t = contract.functions.quit().buildTransaction({'from':address, 'nonce':nonce})
         else:
             query = conn.execute("update tokens set employee = ? where token = ?", [1, token])
             dbEmpStatus = 1
+            t = contract.functions.become_employee().buildTransaction({'from':address, 'nonce':nonce})
 
         conn.commit()
         conn.close()
