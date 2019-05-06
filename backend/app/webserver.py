@@ -134,5 +134,18 @@ def getEmployees():
     addrs.append(str(contract.functions.get_num_employees(1).call()))
     return addrs
 
+def get_receipt(signedTrans):
+    attempts = 0
+    while (attempts < 4):
+        try:
+            print("attempting...")
+            print("number of attempts: " + str(attempts))
+            r = myweb3.eth.getTransactionReceipt(signedTrans)
+            return r
+        except Exception as e:
+            attempts += 1
+            print(str(e))
+        return 0
+
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
