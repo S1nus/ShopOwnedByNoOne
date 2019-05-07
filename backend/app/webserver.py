@@ -74,6 +74,7 @@ def pay():
         query = conn.execute("UPDATE tokens set balance = ? where token = ?", [myweb3.toWei(currentBal, "ether"), token])
         conn.commit()
         conn.close()
+        payEmployeesDb()
         return render_template("control_panel.html", token=token, balance=currentBal, employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
     except Exception as e:
         return render_template("result.html", message="Error paying: "+str(e), token=token)
@@ -102,6 +103,7 @@ def toggleEmployee():
             t = contract.functions.quit().buildTransaction({'from':address, 'nonce':nonce})
         else:
             query = conn.execute("update tokens set employee = ? where token = ?", [1, token])
+            nonce = myweb3.eth.getTransactionCount(address)
             dbEmpStatus = 1
             t = contract.functions.become_employee().buildTransaction({'from':address, 'nonce':nonce})
 
@@ -109,7 +111,7 @@ def toggleEmployee():
         conn.close()
         return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
     except Exception as e:
-        return render_template("control_panel.html", error="error with that")
+        return render_template("control_panel.html", error="error with that: " + str(e))
 
 @app.route("/reauth", methods=["POST"])
 def reauth():
