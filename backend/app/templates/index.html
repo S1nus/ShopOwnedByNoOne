@@ -15,67 +15,23 @@
 
 			document.addEventListener("DOMContentLoaded", function() {
 				textbox = document.getElementById("text-field");
-
-				var file_selector = document.getElementById("file-upload");
-				reader.addEventListener("loadend", function() {
-					image.src = reader.result;
-					var canvas = document.createElement("canvas");
-					canvas.width = image.width;
-					canvas.height = image.height;
-					var ctx = canvas.getContext("2d");
-					ctx.drawImage(image, 0, 0);
-					data = ctx.getImageData(0, 0, image.width, image.height);
-					code = jsQR(data.data, image.width, image.height);
-					document.getElementById("text-field").value = code.data;
-				});
-
-				file_selector.addEventListener("change", function() {
-					reader.readAsDataURL(this.files[0]);
-				});
-
 				contentbox = document.getElementById("interactive");
-				document.getElementById("connect-wallet-btn").addEventListener("click", function() {
-					ajax("/auth", "privkey="+textbox.value); 
-				});
-
 			});
 
-			function updateControlPanel() {
-				try {
-					buyBtn = document.getElementById("buy-btn");	
-					joinBtn = document.getElementById("join-btn");
-					balanceSpan = document.getElementById("balance");	
-					tokenelement = document.getElementById("token");
-					gohomebtn = document.getElementById("go-home");
-					token = tokenelement.value;
-					console.log("token: " + token);
-					buyBtn.addEventListener("click", function() {
-						pay();
-						/*var bal = parseFloat(balanceSpan.innerHTML);
-						if (bal >= 0.015) {
-							bal -= 0.015;
-							balanceSpan.innerHTML = bal;
-						}*/
-					});
-					joinBtn.addEventListener("click", function() {
-						if (joinBtn.innerHTML == "Become Employee") {
-							joinBtn.innerHTML = "Quit";
-						}
-						else {
-							joinBtn.innerHTML = "Become Employee";
-						}
-					});
-					gohomebtn.addEventListener("click", function() {
-						ajax("/reauth", "token="+token);
-					});
-				}
-				catch (e) {
-					console.log("failed: " + e);
-				}
+			function pay() {
+				ajax("/pay", "token="+document.getElementById("token").value);
 			}
 
-			function pay() {
-				ajax("/pay", "token="+token);
+			function becomeEmployee() {
+				ajax("/becomeEmployee", "token="+document.getElementById("token").value);
+			}
+
+			function auth() {
+				ajax("/auth", "privkey="+document.getElementById("text-field").value); 
+			}
+
+			function reauth() {
+				ajax("/reauth", "token="+document.getElementById("token").value);
 			}
 		</script>
 	</head>
@@ -88,11 +44,8 @@
 			No Ethereum wallet detected.
 			<br>
 			<input type="text" id="text-field" placeholder="private key" class="qrcode-text">
-			<label class="qrcode-text-btn">
-				<input type=file id="file-upload" accept="image/*" capture=environment tabindex=-1>
-			</label>
 			<br>
-			<button id="connect-wallet-btn">Connect Wallet</button>
+			<button onclick="auth()" id="connect-wallet-btn">Connect Wallet</button>
 		</div>
 	</body>
 </html>

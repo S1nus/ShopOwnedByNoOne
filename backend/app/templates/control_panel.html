@@ -1,6 +1,8 @@
+<span id="error">{{ error }}</span>
+<br>
 Balance: <span id="balance">{{ balance }}</span> Ether
 <br>
-<button id="join-btn">Become Employee</button>
+<button id="join-btn" onclick="becomeEmployee()">{{ employeeStatus }}</button>
 <br>
-<button id="buy-btn">Buy Lemonade</button>
+<button id="buy-btn" onclick="pay()">Buy Lemonade</button>
 <input type="hidden" id="token" value="{{ token }}" />
