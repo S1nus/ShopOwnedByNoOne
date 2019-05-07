@@ -10,7 +10,8 @@ import random
 
 app = Flask(__name__)
 
-provider = Web3.HTTPProvider("http://parity:8545", request_kwargs={'timeout':60})
+#provider = Web3.HTTPProvider("http://parity:8545", request_kwargs={'timeout':60})
+provider = Web3.HTTPProvider("https://kovan.infura.io/v3/42570b1c29d94b42b621f9b786c4bdd6", request_kwargs={'timeout':60})
 myweb3 = Web3(provider)
 abi = open("shop.abi", "r").read()
 contract = myweb3.eth.contract(abi=abi, address="0xfD6157428a210df574159b39e065A1bfC15023c8")
@@ -36,23 +37,18 @@ def authenticate():
         conn = sqlite3.connect("tokens.db")
         query = conn.execute("select * from tokens where privateKey=?", [strkey])
         query = query.fetchall()
-        dbEmpStatus = 0
         if (len(query) == 0):
-            dbEmpStatus = employeeStatus
             query = conn.execute("insert into tokens (privateKey, address, balance, employee, token) values (?, ?, ?, ?, ?)", [strkey, address, balance, employeeStatus, token])
             conn.commit()
         else:
-            dbEmpStatus = query[0][4]
             balance = query[0][3]
-            query = conn.execute("update tokens set token = ?, employee=? where privateKey = ?", [token, dbEmpStatus, strkey])
+            query = conn.execute("update tokens set token = ? where privateKey = ?", [token, strkey])
             conn.commit()
     except Exception as e:
         return render_template("login.html", error=str(e))
 
     conn.close()
-    print("chain employment status: " + str(employeeStatus))
-    print("db employment status: " + str(dbEmpStatus))
-    return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
+    return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if employeeStatus==0 else "Stop Working")
 
 @app.route("/pay", methods=["POST"])
 def pay():
@@ -64,9 +60,8 @@ def pay():
         assert len(query) == 1, "authentication error"
         address = query[0][2]
         bal = myweb3.fromWei(query[0][3], 'ether')
-        dbEmpStatus = query[0][4]
-        employeeStatus = 0
         current_workers = getEmployees()
+        employeeStatus = 0
         if (address in current_workers):
             employeeStatus = 1
         assert float(bal) > 0.015, "not enough balance"
@@ -74,8 +69,7 @@ def pay():
         query = conn.execute("UPDATE tokens set balance = ? where token = ?", [myweb3.toWei(currentBal, "ether"), token])
         conn.commit()
         conn.close()
-        payEmployeesDb()
-        return render_template("control_panel.html", token=token, balance=currentBal, employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
+        return render_template("control_panel.html", token=token, balance=currentBal, employeeStatus="Become Employee" if employeeStatus==0 else "Stop Working")
     except Exception as e:
         return render_template("result.html", message="Error paying: "+str(e), token=token)
 
@@ -88,30 +82,49 @@ def toggleEmployee():
         query = query.fetchall()
         assert len(query) == 1, "authentication error"
         balance = query[0][3]
-        dbEmpStatus = query[0][4]
         address = query[0][2]
+        pkey = query[0][1]
         current_workers = getEmployees()
         employeeStatus = 0
         if (address in current_workers):
             employeeStatus = 1
-        print("dbEmpStatus: " + str(dbEmpStatus))
-        print("chain employment status: " + str(employeeStatus))
-        if (dbEmpStatus == 1):
-            query = conn.execute("update tokens set employee = ? where token = ?", [0, token])
-            dbEmpStatus = 0
+        if (employeeStatus == 0):
+            # become an employee
+            nonce = myweb3.eth.getTransactionCount(address)
+            t = contract.functions.become_employee().buildTransaction({'from':address, 'nonce':nonce})
+            t['gas'] += 2000
+            t['gasPrice'] = myweb3.toWei(3, 'gwei')
+            signed = myweb3.eth.account.signTransaction(t, pkey)
+            tx = myweb3.eth.sendRawTransaction(signed['rawTransaction'])
+            r = get_receipt(str(tx.hex()))
+            if not (r == 0):
+                if (r['status'] == 1):
+                    return render_template("result.html", message="succesfully became employee", token=token)
+                else:
+                    return render_template("result.html", message="r['status'] wasn't 1: "+str(r), token=token)
+            else:
+                return render_template("result.html", message="failed to start working", token=token)
+        elif (employeeStatus == 1):
+            # Quit
             nonce = myweb3.eth.getTransactionCount(address)
             t = contract.functions.quit().buildTransaction({'from':address, 'nonce':nonce})
+            t['gas'] += 2000
+            t['gasPrice'] = myweb3.toWei(3, 'gwei')
+            signed = myweb3.eth.account.signTransaction(t, pkey)
+            tx = myweb3.eth.sendRawTransaction(signed['rawTransaction'])
+            r = get_receipt(str(tx.hex()))
+            if not (r == 0):
+                if (r['status'] == 1):
+                    return render_template("result.html", message="succesfully quit", token=token)
+                else:
+                    return render_template("result.html", message="r['status'] wasn't 1: "+str(r), token=token)
+            else:
+                return render_template("result.html", message="failed to quit", token=token)
         else:
-            query = conn.execute("update tokens set employee = ? where token = ?", [1, token])
-            nonce = myweb3.eth.getTransactionCount(address)
-            dbEmpStatus = 1
-            t = contract.functions.become_employee().buildTransaction({'from':address, 'nonce':nonce})
-
-        conn.commit()
-        conn.close()
-        return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
+            #there is an error
+            return render_template("result.html", message="Employee status unknown", token=token)
     except Exception as e:
-        return render_template("control_panel.html", error="error with that: " + str(e))
+        return "error son"
 
 @app.route("/reauth", methods=["POST"])
 def reauth():
@@ -123,13 +136,12 @@ def reauth():
         assert len(query) == 1, "authentication error"
         address = query[0][2]
         balance = query[0][3]
-        dbEmpStatus = query[0][4]
         current_workers = getEmployees()
         if (address in current_workers):
             employeeStatus = 1
         else:
             employeeStatus = 0
-        return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if dbEmpStatus==0 else "Stop Working", error="" if employeeStatus==dbEmpStatus else "Blockchain employment status doesn't match stored employee status. This is okay for the demo.")
+        return render_template("control_panel.html", token=token, balance=myweb3.fromWei(balance, 'ether'), employeeStatus="Become Employee" if employeeStatus==0 else "Stop Working")
     except Exception as e:
         return render_template("login.html", error="error: " + str(e))
 
@@ -140,17 +152,19 @@ def getEmployees():
     return addrs
 
 def get_receipt(signedTrans):
+    time.sleep(10)
     attempts = 0
     while (attempts < 4):
         try:
             print("attempting...")
             print("number of attempts: " + str(attempts))
             r = myweb3.eth.getTransactionReceipt(signedTrans)
+            assert not r == None, "r was None"
             return r
         except Exception as e:
             attempts += 1
             print(str(e))
-        return 0
+    return 0
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
