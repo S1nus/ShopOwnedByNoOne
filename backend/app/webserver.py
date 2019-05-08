@@ -41,7 +41,6 @@ def authenticate():
             query = conn.execute("insert into tokens (privateKey, address, balance, employee, token) values (?, ?, ?, ?, ?)", [strkey, address, balance, employeeStatus, token])
             conn.commit()
         else:
-            balance = query[0][3]
             query = conn.execute("update tokens set token = ? where privateKey = ?", [token, strkey])
             conn.commit()
     except Exception as e:
@@ -150,7 +149,7 @@ def reauth():
         query = query.fetchall()
         assert len(query) == 1, "authentication error"
         address = query[0][2]
-        balance = query[0][3]
+        balance = myweb3.eth.getBalance(address)
         current_workers = getEmployees()
         if (address in current_workers):
             employeeStatus = 1
