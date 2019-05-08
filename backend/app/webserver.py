@@ -59,7 +59,9 @@ def pay():
         query = query.fetchall()
         assert len(query) == 1, "authentication error"
         address = query[0][2]
-        bal = myweb3.fromWei(query[0][3], 'ether')
+        pkey = query[0][1]
+        #bal = myweb3.fromWei(query[0][3], 'ether')
+        bal = myweb3.fromWei(myweb3.eth.getBalance(address), "ether")
         current_workers = getEmployees()
         employeeStatus = 0
         if (address in current_workers):
@@ -69,7 +71,20 @@ def pay():
         query = conn.execute("UPDATE tokens set balance = ? where token = ?", [myweb3.toWei(currentBal, "ether"), token])
         conn.commit()
         conn.close()
-        return render_template("control_panel.html", token=token, balance=currentBal, employeeStatus="Become Employee" if employeeStatus==0 else "Stop Working")
+        nonce = myweb3.eth.getTransactionCount(address)
+        t = contract.functions.purchase().buildTransaction({'from':address, 'nonce':nonce, 'value':myweb3.toWei(0.015, "ether")})
+        t['gas'] += 2000
+        t['gasPrice'] = myweb3.toWei(3, 'gwei')
+        signed = myweb3.eth.account.signTransaction(t, pkey)
+        tx = myweb3.eth.sendRawTransaction(signed['rawTransaction'])
+        r = get_receipt(str(tx.hex()))
+        if not (r == 0):
+            if (r['status'] == 1):
+                return render_template("result.html", message="Succesfully paid!", token=token)
+            else:
+                return render_template("result.html", message="r['status'] wasn't 1: "+str(r), token=token)
+        else:
+            return render_template("result.html", message="failed to start working", token=token)
     except Exception as e:
         return render_template("result.html", message="Error paying: "+str(e), token=token)
 
